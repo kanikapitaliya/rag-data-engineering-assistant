@@ -1,0 +1,16 @@
+# Virtual Environment
+venv/
+
+# ChromaDB Storage
+chroma_db/
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# OS Files
+.DS_Store
+Thumbs.db
