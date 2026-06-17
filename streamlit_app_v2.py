@@ -1,6 +1,11 @@
 import streamlit as st
 import chromadb
-import ollama
+import anthropic
+from dotenv import load_dotenv
+import os
+
+#load environment variables
+load_dotenv()
 
 # ============================================================
 # PAGE CONFIGURATION
@@ -159,6 +164,21 @@ collection = client.get_collection(
 )
 
 # ============================================================
+# CLAUDE CLIENT
+# ============================================================
+
+claude = anthropic.Anthropic(
+    api_key=os.getenv("ANTHROPIC_API_KEY")
+)
+
+# ============================================================
+# SESSION STATE
+# ============================================================
+
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+# ============================================================
 # DOCUMENT ROUTER
 # ============================================================
 
@@ -213,7 +233,7 @@ Ask questions about pipelines, SQL, runbooks, policies and enterprise metadata
 # SEARCH AREA
 # ============================================================
 
-search_col, button_col = st.columns([8,2])
+search_col, button_col = st.columns([8, 2])
 
 with search_col:
     question = st.text_input(
@@ -223,10 +243,21 @@ with search_col:
     )
 
 with button_col:
+
     search = st.button(
         "🚀 Submit",
         use_container_width=True
     )
+
+    clear = st.button(
+        "🗑️ Clear Chat",
+        use_container_width=True
+    )
+
+    if clear:
+        st.session_state.history = []
+        st.rerun()
+
 
 # ============================================================
 # SEARCH LOGIC STARTS HERE
@@ -269,21 +300,31 @@ Context:
 Question:
 {question}
 """
+    import time
+    start_time = time.time()
 
-    with st.spinner("Searching knowledge base..."):
-        response = ollama.chat(
-            model="llama3.2:1b",
+    with st.spinner("Thinking..."):
+        response = claude.messages.create(
+            model="claude-3-5-haiku-latest",
+            max_tokens=600,
+            temperature=0,
             messages=[
                 {
-                    "role":"user",
-                    "content":prompt
+                    "role": "user",
+                    "content": prompt
                 }
             ]
         )
 
-    # ============================================================
-    # ANSWER CARD
-    # ============================================================
+    end_time = time.time()
+    response_time = round(
+        end_time - start_time,
+        2
+    )
+
+# ============================================================
+# ANSWER CARD
+# ============================================================
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -293,13 +334,22 @@ Question:
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown(f"""
-    <div class="answer-card">
+    st.session_state.history.insert(
+        0,
+        {
+            "question": question,
+            "answer": response.content[0].text,
+            "time": response_time
+        }
+    )
 
-    {response["message"]["content"]}
+    st.success(
+        response.content[0].text
+    )
 
-    </div>
-    """, unsafe_allow_html=True)
+    st.caption(
+        f"⚡ Generated in {response_time} seconds"
+    )
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -384,6 +434,20 @@ else:
         unsafe_allow_html=True
     )
 
+if st.session_state.history:
+    st.markdown("---")
+    st.subheader("💬 Previous Questions")
+    for i, chat in enumerate(st.session_state.history, start=1):
+        with st.expander(
+            f"💬 {i}. {chat['question']}",
+            expanded=False
+        ):
+            st.markdown(chat["answer"])
+
+            st.caption(
+                f"⏱️ Response Time: {chat['time']} sec"
+            )
+
 # ============================================================
 # FOOTER
 # ============================================================
@@ -398,7 +462,7 @@ st.markdown(
 )
 
 st.caption(
-    "Built with Streamlit • ChromaDB • Ollama"
+    "Built with Streamlit • ChromaDB • Claude"
 )
 
 st.caption(
