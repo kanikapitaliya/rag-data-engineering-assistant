@@ -1,11 +1,10 @@
 import streamlit as st
 import chromadb
-import anthropic
+from google import genai
 from dotenv import load_dotenv
 import os
 
-#load environment variables
-load_dotenv()
+load_dotenv() #load environment variables
 
 # ============================================================
 # PAGE CONFIGURATION
@@ -105,9 +104,10 @@ html, body, [class*="css"]{
 
 .stTextInput input{
     height:62px;
-    border-radius:12px;
+    border-radius:14px;
     border:1px solid #D1D5DB;
     font-size:17px;
+    padding:14px 18px;
 }
 
 /* ---------------- Button ---------------- */
@@ -152,6 +152,38 @@ font-weight:600;
 """, unsafe_allow_html=True)
 
 # ============================================================
+# SIDEBAR
+# ============================================================
+
+with st.sidebar:
+
+    st.markdown("## 📚 Knowledge Base")
+
+    st.markdown("---")
+
+    st.metric("Documents", "5")
+    st.metric("LLM", "Gemini 2.5 Flash")
+    st.metric("Vector DB", "ChromaDB")
+
+    st.markdown("---")
+
+    st.markdown("### Knowledge Domains")
+
+    st.markdown("""
+- 🚀 Pipelines
+- 🗄 SQL
+- 📖 Runbooks
+- 🔐 Policies
+- 📋 Catalogs
+""")
+
+    st.markdown("---")
+
+    st.success("🟢 System Ready")
+
+    st.caption("Enterprise Data Engineering Assistant")
+
+# ============================================================
 # DATABASE
 # ============================================================
 
@@ -164,11 +196,11 @@ collection = client.get_collection(
 )
 
 # ============================================================
-# CLAUDE CLIENT
+# GEMINI CLIENT
 # ============================================================
 
-claude = anthropic.Anthropic(
-    api_key=os.getenv("ANTHROPIC_API_KEY")
+client_ai = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
 )
 
 # ============================================================
@@ -219,13 +251,13 @@ def get_document_type(question):
 
 st.markdown("""
 <div class="main-title">
-📊 RAG-Powered Data Engineering Assistant
+📊 Enterprise Data Engineering Knowledge Assistant
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="sub-title">
-Ask questions about pipelines, SQL, runbooks, policies and enterprise metadata
+AI-powered enterprise knowledge search using Retrieval-Augmented Generation (RAG), ChromaDB and Gemini
 </div>
 """, unsafe_allow_html=True)
 
@@ -258,6 +290,17 @@ with button_col:
         st.session_state.history = []
         st.rerun()
 
+st.markdown(
+    """
+**💡 Example Questions**
+
+- Who owns the customer pipeline?
+- What is the customer pipeline SLO?
+- Show me the revenue SQL query.
+- Which fields are considered PII?
+- How do I recover the customer pipeline after a database outage?
+"""
+)
 
 # ============================================================
 # SEARCH LOGIC STARTS HERE
@@ -304,16 +347,9 @@ Question:
     start_time = time.time()
 
     with st.spinner("Thinking..."):
-        response = claude.messages.create(
-            model="claude-3-5-haiku-latest",
-            max_tokens=600,
-            temperature=0,
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
+        response = client_ai.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
         )
 
     end_time = time.time()
@@ -338,13 +374,13 @@ Question:
         0,
         {
             "question": question,
-            "answer": response.content[0].text,
+            "answer": response.text,
             "time": response_time
         }
     )
 
     st.success(
-        response.content[0].text
+        response.text
     )
 
     st.caption(
@@ -409,31 +445,6 @@ Question:
     # METADATA
     # ============================================================
 
-else:
-
-    st.markdown("<br><br>", unsafe_allow_html=True)
-
-    st.markdown(
-        """
-        <div class="card">
-        <h3 style="margin-top:0;">
-        👋 Welcome
-        </h3>
-        Ask any question related to your enterprise knowledge base.
-        <br><br>
-        <b>Example Questions</b>
-        <ul>
-        <li>Who owns the customer pipeline?</li>
-        <li>What is the customer pipeline SLO?</li>
-        <li>Show me the revenue SQL query.</li>
-        <li>Which fields are considered PII?</li>
-        <li>How do I recover the customer pipeline after a database outage?</li>
-        </ul>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
 if st.session_state.history:
     st.markdown("---")
     st.subheader("💬 Previous Questions")
@@ -462,7 +473,7 @@ st.markdown(
 )
 
 st.caption(
-    "Built with Streamlit • ChromaDB • Claude"
+    "Built with Streamlit • ChromaDB • Google Gemini"
 )
 
 st.caption(
