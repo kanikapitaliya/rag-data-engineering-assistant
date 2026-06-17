@@ -152,38 +152,6 @@ font-weight:600;
 """, unsafe_allow_html=True)
 
 # ============================================================
-# SIDEBAR
-# ============================================================
-
-with st.sidebar:
-
-    st.markdown("## 📚 Knowledge Base")
-
-    st.markdown("---")
-
-    st.metric("Documents", "5")
-    st.metric("LLM", "Gemini 2.5 Flash")
-    st.metric("Vector DB", "ChromaDB")
-
-    st.markdown("---")
-
-    st.markdown("### Knowledge Domains")
-
-    st.markdown("""
-- 🚀 Pipelines
-- 🗄 SQL
-- 📖 Runbooks
-- 🔐 Policies
-- 📋 Catalogs
-""")
-
-    st.markdown("---")
-
-    st.success("🟢 System Ready")
-
-    st.caption("Enterprise Data Engineering Assistant")
-
-# ============================================================
 # DATABASE
 # ============================================================
 
