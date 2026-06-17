@@ -366,6 +366,26 @@ The assistant automatically classifies each query, retrieves the most relevant d
 
 ---
 
+## Application Screenshots
+
+### Home Page
+
+<img width="1558" height="900" alt="Screenshot 2026-06-17 211152" src="https://github.com/user-attachments/assets/1631a701-42f3-45b7-b6da-da0e32a7b1b9" />
+
+---
+
+### Response Generation
+
+<img width="1558" height="900" alt="Screenshot 2026-06-17 211355" src="https://github.com/user-attachments/assets/569ac424-4782-43bf-9db9-0be4f20434b8" />
+
+---
+
+### Retrieved Context and Sources
+
+<img width="1283" height="895" alt="Screenshot 2026-06-17 211717" src="https://github.com/user-attachments/assets/2c142e82-f062-4629-bc4e-e349c1a1d56c" />
+
+---
+
 ## Future Improvements
 
 The current implementation demonstrates a complete metadata-aware Retrieval-Augmented Generation (RAG) pipeline. Future enhancements may include:
